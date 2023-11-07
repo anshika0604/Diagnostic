@@ -47,6 +47,10 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -56,6 +60,8 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
     private ImageView rootStatus, bluetoothStatus, micStatus, gyroStatus, gpsStatus, cameraStatus, accStatus;
     private Button checkButton;
     private static BluetoothAdapter bluetoothAdapter;
+    private FirebaseDatabase database;
+    private DatabaseReference databaseReference;
     private SensorManager sensorManager;
     private Sensor gyroscopeSensor;
     private FrameLayout frameLayout;
@@ -98,6 +104,8 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
         testResultsTable = findViewById(R.id.testResultsTable);
 
         boolean check = checkPermissions();
+        database = FirebaseDatabase.getInstance();
+        databaseReference = database.getReference();
 
         if (check) {
             checkButton.setOnClickListener(new View.OnClickListener() {
@@ -106,97 +114,6 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
                     checkButton.setBackgroundColor(getResources().getColor(R.color.primary));
                     checkButton.setTextColor(getResources().getColor(R.color.black));
                     checkButton.setText("7 tests Remaining");
-                    boolean isRooted = isDeviceRooted();
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (isRooted) {
-                                rootedResult = true;
-                                rootStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                            } else {
-                                rootedResult = false;
-                                rootStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("6 tests Remaining");
-                        }
-                    }, 2000);
-                    boolean isEnabled = checkBluetooth();
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (isEnabled) {
-                                bluetoothResult = true;
-                                bluetoothStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                            } else {
-                                bluetoothResult = false;
-                                bluetoothStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("5 tests Remaining");
-                        }
-                    }, 5000);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            if (isMicrophoneAvailable()) {
-                                if (isSpeakerAvailable(FinalCheck.this)) {
-                                    micResult = true;
-                                    micStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                                } else {
-                                    micResult = false;
-                                    micStatus.setImageResource(R.drawable.baseline_cancel_24);
-                                }
-                            } else {
-                                micResult = false;
-                                micStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("4 tests Remaining");
-                        }
-                    }, 10000);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-                            gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-
-                            if (gyroscopeSensor != null) {
-
-                                gyroResult = true;
-                                sensorManager.registerListener(FinalCheck.this, gyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
-                                gyroStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                            } else {
-                                gyroResult = false;
-                                gyroStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("3 tests Remaining");
-                        }
-                    }, 15000);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean check = isGpsAvailableAndEnabled(FinalCheck.this);
-                            gpsResult = check;
-                            if (check) {
-                                gpsStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                            } else {
-                                gpsStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("2 tests Remaining");
-                        }
-                    }, 20000);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean check = isAccelerometerAvailable(FinalCheck.this);
-                            accResult = check;
-                            if (check) {
-                                accStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                            } else {
-                                accStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("1 test Remaining");
-                        }
-                    }, 25000);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -224,6 +141,97 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
                                 cameraResult = false;
                                 cameraStatus.setImageResource(R.drawable.baseline_cancel_24);
                             }
+                            checkButton.setText("6 tests Remaining");
+                        }
+                    }, 2000);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if (isMicrophoneAvailable()) {
+                                if (isSpeakerAvailable(FinalCheck.this)) {
+                                    micResult = true;
+                                    micStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                                } else {
+                                    micResult = false;
+                                    micStatus.setImageResource(R.drawable.baseline_cancel_24);
+                                }
+                            } else {
+                                micResult = false;
+                                micStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
+                            checkButton.setText("5 tests Remaining");
+                        }
+                    }, 5000);
+                    boolean isEnabled = checkBluetooth();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (isEnabled) {
+                                bluetoothResult = true;
+                                bluetoothStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                            } else {
+                                bluetoothResult = false;
+                                bluetoothStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
+                            checkButton.setText("4 tests Remaining");
+                        }
+                    }, 10000);
+                    boolean isRooted = isDeviceRooted();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (isRooted) {
+                                rootedResult = true;
+                                rootStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                            } else {
+                                rootedResult = false;
+                                rootStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
+                            checkButton.setText("3 tests Remaining");
+                        }
+                    }, 15000);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean check = isAccelerometerAvailable(FinalCheck.this);
+                            accResult = check;
+                            if (check) {
+                                accStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                            } else {
+                                accStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
+                            checkButton.setText("2 test Remaining");
+                        }
+                    }, 20000);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+                            gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+                            if (gyroscopeSensor != null) {
+
+                                gyroResult = true;
+                                sensorManager.registerListener(FinalCheck.this, gyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
+                                gyroStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                            } else {
+                                gyroResult = false;
+                                gyroStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
+                            checkButton.setText("1 tests Remaining");
+                        }
+                    }, 25000);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean check = isGpsAvailableAndEnabled(FinalCheck.this);
+                            gpsResult = check;
+                            if (check) {
+                                gpsStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                            } else {
+                                gpsStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
                             checkButton.setText("Finished");
                             checkButton.setBackgroundColor(getResources().getColor(R.color.red));
                         }
@@ -243,11 +251,33 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
                             addTableRow("Accelerometer Sensor: ", accResult ? "Passed" : "Failed");
                             addTableRow("GyroScope Sensor: ", gyroResult ? "Passed" : "Failed");
                             addTableRow("GPS Sensor: ", gpsResult ? "Passed" : "Failed");
+                            pushDataToFirebase();
                         }
                     }, 40000);
                 }
             });
         }
+    }
+    private void pushDataToFirebase() {
+
+        DatabaseReference resultsRef = databaseReference.child("test_results");
+
+        TestResult rootedResultObject = new TestResult("Rooted Device", rootedResult ? "Passed" : "Failed");
+        TestResult bluetoothResultObject = new TestResult("Bluetooth Enabled", bluetoothResult ? "Passed" : "Failed");
+        TestResult cameraResultObject = new TestResult("Camera Working: ", cameraResult ? "Passed" : "Failed");
+        TestResult micResultObject = new TestResult("Mic & Speaker Enabled: ", micResult ? "Passed" : "Failed");
+        TestResult accsensorObject = new TestResult("Accelerometer Sensor: ", accResult ? "Passed" : "Failed");
+        TestResult gyroScopeObject = new TestResult("GyroScope Sensor: ", gyroResult ? "Passed" : "Failed");
+        TestResult gpsSensorObject = new TestResult("GPS Sensor: ", gpsResult ? "Passed" : "Failed");
+
+        resultsRef.push().setValue(rootedResultObject);
+        resultsRef.push().setValue(bluetoothResultObject);
+        resultsRef.push().setValue(cameraResultObject);
+        resultsRef.push().setValue(micResultObject);
+        resultsRef.push().setValue(accsensorObject);
+        resultsRef.push().setValue(gyroScopeObject);
+        resultsRef.push().setValue(gpsSensorObject);
+
     }
     private void addTableRow(String testName, String testResult) {
         TableRow row = new TableRow(this);
