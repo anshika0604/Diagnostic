@@ -162,7 +162,7 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
                             }
                             checkButton.setText("5 tests Remaining");
                         }
-                    }, 5000);
+                    }, 7000);
                     boolean isEnabled = checkBluetooth();
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -207,6 +207,19 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            boolean check = isGpsAvailableAndEnabled(FinalCheck.this);
+                            gpsResult = check;
+                            if (check) {
+                                gpsStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
+                            } else {
+                                gpsStatus.setImageResource(R.drawable.baseline_cancel_24);
+                            }
+                            checkButton.setText("1 tests Remaining");
+                        }
+                    }, 25000);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
                             sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
                             gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
@@ -218,19 +231,6 @@ public class FinalCheck extends AppCompatActivity implements SensorEventListener
                             } else {
                                 gyroResult = false;
                                 gyroStatus.setImageResource(R.drawable.baseline_cancel_24);
-                            }
-                            checkButton.setText("1 tests Remaining");
-                        }
-                    }, 25000);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean check = isGpsAvailableAndEnabled(FinalCheck.this);
-                            gpsResult = check;
-                            if (check) {
-                                gpsStatus.setImageResource(R.drawable.baseline_check_circle_outline_24);
-                            } else {
-                                gpsStatus.setImageResource(R.drawable.baseline_cancel_24);
                             }
                             checkButton.setText("Finished");
                             checkButton.setBackgroundColor(getResources().getColor(R.color.red));
